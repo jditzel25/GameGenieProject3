@@ -1,3 +1,4 @@
+#include "color.hpp"
 #include <iostream>
 #include <sstream>
 #include <vector>
@@ -7,12 +8,11 @@
 #include <algorithm>
 #include <chrono>
 #include <regex>
-
-// Testing push :)
-
+#include <set>
 
 using namespace std;
 using namespace std::chrono;
+
 
 void extractDataFromFile(vector<Game>& listOfAllGames){
     string line;
@@ -139,8 +139,7 @@ void extractDataFromFile(vector<Game>& listOfAllGames){
 
 }
 
-// RADIX SORT
-
+// Radix sort
 int getMax(vector<Game>& games, int n)
 {
 
@@ -194,26 +193,18 @@ void countSort(vector<Game>& games, int n, int exp)
 
 }
 
-
-// Radix Sort
 void radixsort(vector<Game>& games, int n)
 {
-    auto start = high_resolution_clock::now();
     // Find the maximum number to know number of digits
     int m = getMax(games, n);
 
 
     for (int exp = 1; m / exp > 0; exp *= 10)
         countSort(games, n, exp);
-    auto stop = high_resolution_clock::now();
-    auto duration = duration_cast<microseconds>(stop - start);
-    cout << "GameGenie: The time taken by Radix Sort is: "
-         << duration.count() << " microseconds" << endl;
+    
 }
 
-
-
-
+// Quick sort
 void swap(int &a, int &b) {
     int temp = a;
     a = b;
@@ -247,12 +238,7 @@ void quicksort(std::vector<Game> &arr, int low, int high) {
 }
 
 
-
-
-
-
-
-
+// Bucket sort
 void bucketSort(vector<Game>& arr) {
     int n = arr.size();
     if (n <= 0) {
@@ -285,9 +271,6 @@ void bucketSort(vector<Game>& arr) {
 }
 
 
-
-
-
 int main() {
     //  std::cout << "Hello, World!" << std::endl;
     regex top10Games = regex("top\\S+10\\S+games|top\\s+10\\s+games|top10 games|top 10games");
@@ -297,10 +280,12 @@ int main() {
     regex infoGame = regex("S+info\\S+game|s+info\\s+game|info game|info game|infogame");
     regex showGame = regex("S+show\\S+game|s+show\\s+game|show game|showgame");
     regex genre = regex("genre");
-    vector<Game> allGamesList;
 
+    // Extract data from CSV file
+    vector<Game> allGamesList;
     extractDataFromFile(allGamesList);
 
+    /*
     string selection1;
     string selection2;
 
@@ -678,19 +663,313 @@ int main() {
 
     }
 
+    int a = 3; */
+
+    cout << dye::red("GameGenie: Your Personal Gaming Resources (with sorting)") << endl << endl;
+
+    // Continuous loop throughout the program: set program to false on exit
+    bool programRun = true;
+    while (programRun)
+    {
+        cout << dye::blue("GameGenie: What can I help you with today?") << endl;
+
+        // Display options menu
+        cout << dye::green("1. Rankings") << endl;
+        cout << dye::green("2. Search Game") << endl;
+        cout << dye::green("3: Exit") << endl;
+
+        // Input option
+        int option;
+        string tempOption;
+        getline(cin, tempOption);
+        option = stoi(tempOption);
+
+        if (option == 1) // Rank top X games
+        {
+            // Input number of ranks to be displayed
+            int numRanks;
+            cout << dye::blue("GameGenie: How many to be displayed?") << endl;
+            string tempRank;
+            getline(cin, tempRank);
+            numRanks = stoi(tempRank);
+
+            // Keep within bounds
+            if (numRanks <= 1)
+            {
+                numRanks = 2;
+            }
+            else if (numRanks > allGamesList.size())
+            {
+                numRanks = allGamesList.size();
+            }
+
+            string answer;
+            while (true)
+            {
+                // Display in ascending or descending order
+                cout << dye::blue("GameGenie: Start from bottom (b) or top (t)?") << endl;
+                getline(cin, answer);
+
+                if (answer == "b" || answer == "t")
+                {
+                    break;
+                }
+                else
+                {
+                    // Invalid option, not "b" or "t"
+                    cout << dye::blue("GameGenie: Invalid option! Try again?") << endl;
+                }
+            }
+
+            // Initialize unsorted lists
+            vector<Game> sortedList1, sortedList2, sortedList3;
+            sortedList1 = sortedList2 = sortedList3 = allGamesList;
+
+            // Perform Radix Sort
+            auto start1 = high_resolution_clock::now();
+            radixsort(sortedList1, sortedList1.size());
+            auto stop1 = high_resolution_clock::now();
+            auto duration1 = duration_cast<microseconds>(stop1 - start1);
+
+            // Perform Quicksort
+            auto start2 = high_resolution_clock::now();
+            quicksort(sortedList2, 0, sortedList2.size() - 1);
+            auto stop2 = high_resolution_clock::now();
+            auto duration2 = duration_cast<microseconds>(stop2 - start2);
+                    
+            // Perform bucket sort
+            auto start3 = high_resolution_clock::now();
+            bucketSort(sortedList3);
+            auto stop3 = high_resolution_clock::now();
+            auto duration3 = duration_cast<microseconds>(stop3 - start3);
+
+            if (answer == "t")
+            {
+                // Display results in descending order by metric score (highest ranked first)
+                cout << dye::blue("GameGenie: Here are the top ") << dye::blue(numRanks) << dye::blue(" games based on metric scores") << endl;
+                int n = 1;
+                for (int i = sortedList1.size() - 1; i > ((int) sortedList1.size()) - numRanks - 1; --i) {
+                    cout << dye::purple(n) << dye::purple(". ") << dye::purple(sortedList1[i].returnTitle()) << dye::purple(": ") << dye::light_yellow(sortedList1[i].returnRatings()) << endl;
+                    ++n;
+                }
+            }
+            else
+            {
+                // Display reuslts in ascending order by metric score (lowest first)
+                cout << dye::blue("GameGenie: Here are the bottom ") << dye::blue(numRanks) << dye::blue(" games based on metric scores") << endl;
+                int n = 1;
+                for (int i = 0; i < numRanks; ++i) {
+                    cout << dye::purple(n) << dye::purple(". ") << dye::purple(sortedList1[i].returnTitle()) << dye::purple(": ") << dye::light_yellow(sortedList1[i].returnRatings()) << endl;
+                    ++n;
+                }
+            }
+
+            // Display the times for each sorting algorithm
+            cout << endl;
+            cout << dye::blue("GameGenie: Time taken by sorting:") << endl;
+            cout << dye::purple("Radix Sort: ") << dye::light_yellow(duration1.count() / 1000.0) << dye::light_yellow(" ms") << endl;
+            cout << dye::purple("Quick Sort: ") << dye::light_yellow(duration2.count() / 1000.0) << dye::light_yellow(" ms") << endl;
+            cout << dye::purple("Bucket Sort: ") << dye::light_yellow(duration3.count() / 1000.0) << dye::light_yellow(" ms") << endl << endl;
+                
+        }
+        else if (option == 2) // Lookup game
+        {
+            int choice;
+            while (true)
+            {
+                // Display search menu options
+                cout << dye::blue("GameGenie: Search game by") << endl;
+                cout << dye::green("1. Title") << endl;
+                cout << dye::green("2. Genre") << endl;
+                cout << dye::green("3. Year") << endl;
+                cout << dye::green("4. Publisher") << endl;
+                cout << dye::green("5. Release Console") << endl;
+                cout << dye::green("6. Exit") << endl;
+                
+                // Take in input for menu option
+                string tempChoice;
+                getline(cin, tempChoice);
+                choice = stoi(tempChoice);
+
+                // Check if valid choice
+                if (choice < 1 || choice > 6)
+                {
+                    cout << dye::blue("GameGenie: Invalid option! Try again?") << endl;
+                }
+                else if (choice == 6) // Exit
+                {
+                    break;
+                }
+                else
+                {
+                    string line;
+
+                    vector<Game> matches;
+                    if (choice == 1) // Search by title
+                    {
+                        cout << dye::blue("GameGenie: Input title") << endl;
+                        getline(cin, line);
+
+                        // Loop through each game and find matches
+                        for (int i = 0; i < allGamesList.size(); i++)
+                        {
+                            // Find current title and convert to upper to avoid case issues
+                            string currTitle = allGamesList[i].returnTitle();
+                            transform(currTitle.begin(), currTitle.end(), currTitle.begin(), ::toupper);
+                            transform(line.begin(), line.end(), line.begin(), ::toupper);
+
+                            // Check if there is a match
+                            if (currTitle.find(line) != string::npos)
+                            {
+                                matches.push_back(allGamesList[i]);
+                            }
+                        }
+                    }
+                    else if (choice == 2) // Search by genre
+                    {
+                        cout << dye::blue("GameGenie: Input genre") << endl;
+                        getline(cin, line);
+
+                        // Loop through each game and find matches
+                        for (int i = 0; i < allGamesList.size(); i++)
+                        {
+                            // Find current genre and convert to upper to avoid case issues
+                            string currGenre = allGamesList[i].returnGenre();
+                            transform(currGenre.begin(), currGenre.end(), currGenre.begin(), ::toupper);
+                            transform(line.begin(), line.end(), line.begin(), ::toupper);
+
+                            // Check if there is a match
+                            if (currGenre.find(line) != string::npos)
+                            {
+                                matches.push_back(allGamesList[i]);
+                            }
+                        }
+                    }
+                    else if (choice == 3) // Search by year published (2004-2008 only in dataset)
+                    {
+                        cout << dye::blue("GameGenie: Input year published") << endl;
+                        getline(cin, line);
+
+                        // Loop through each game and find matches
+                        for (int i = 0; i < allGamesList.size(); i++)
+                        {
+                            // Find current year
+                            int currYear = allGamesList[i].returnYear();
+                            int inputYear = stoi(line);       
+
+                            // Check if there is a match
+                            if (currYear == inputYear)
+                            {
+                                matches.push_back(allGamesList[i]);
+                            }
+                            
+                        }
+
+                    }
+                    else if (choice == 4) // Search by game publisher
+                    {
+                        cout << dye::blue("GameGenie: Input publisher") << endl;
+                        getline(cin, line);
+
+                        // Loop through each game and find matches
+                        for (int i = 0; i < allGamesList.size(); i++)
+                        {
+                            // Find current publisher and convert to upper to avoid case issues
+                            string currPublisher = allGamesList[i].returnPublisher();
+                            transform(currPublisher.begin(), currPublisher.end(), currPublisher.begin(), ::toupper);
+                            transform(line.begin(), line.end(), line.begin(), ::toupper);
+
+                            // Check if there is a match
+                            if (currPublisher.find(line) != string::npos)
+                            {
+                                matches.push_back(allGamesList[i]);
+                            }
+                        }
+                    }
+                    else if (choice == 5) // Search by console released
+                    {
+                        cout << dye::blue("GameGenie: Input console") << endl;
+                        getline(cin, line);
+
+                        // Loop through each game and find matches
+                        for (int i = 0; i < allGamesList.size(); i++)
+                        {
+                            // Find current console and convert to upper to avoid case issues
+                            string currConsole = allGamesList[i].returnConsole();
+                            transform(currConsole.begin(), currConsole.end(), currConsole.begin(), ::toupper);
+                            transform(line.begin(), line.end(), line.begin(), ::toupper);
+
+                            // Check if there is a match
+                            if (currConsole.find(line) != string::npos)
+                            {
+                                matches.push_back(allGamesList[i]);
+                            }
+                        }
+                    }
 
 
+                    if (matches.size() == 0) // No matches found / vector is empty
+                    {
+                        cout << dye::blue("GameGenie: No matches found!") << endl;
+                    }
+                    else
+                    {
+                        // Initialize unsorted lists
+                        vector<Game> sortedList1, sortedList2, sortedList3;
+                        sortedList1 = sortedList2 = sortedList3 = matches;
+                        
+                        // Perform Radix Sort
+                        auto start1 = high_resolution_clock::now();
+                        radixsort(sortedList1, sortedList1.size());
+                        auto stop1 = high_resolution_clock::now();
+                        auto duration1 = duration_cast<microseconds>(stop1 - start1);
 
-    //  cout << "SORTED: " << endl;
+                        // Perform Quicksort
+                        auto start2 = high_resolution_clock::now();
+                        quicksort(sortedList2, 0, sortedList2.size() - 1);
+                        auto stop2 = high_resolution_clock::now();
+                        auto duration2 = duration_cast<microseconds>(stop2 - start2);
+                                
+                        // Perform bucket sort
+                        auto start3 = high_resolution_clock::now();
+                        bucketSort(sortedList3);
+                        auto stop3 = high_resolution_clock::now();
+                        auto duration3 = duration_cast<microseconds>(stop3 - start3);
 
-/*
-    for(Game A : allGamesList){
-        cout << A.returnTitle() << endl;
-        cout << A.returnRatings() << endl;
+
+                        // Print out the data for each matching game
+                        cout << dye::blue("GameGenie: Here are all matching games:") << endl;
+                        for (int i = matches.size() - 1; i >= 0; --i)
+                        {
+                            cout << dye::purple(matches.size() - i) << dye::purple(") ") << dye::light_yellow(sortedList1[i].returnTitle()) << endl;
+                            cout << "\t" << dye::purple("Genre: ") << dye::light_yellow(sortedList1[i].returnGenre()) << endl;
+                            cout << "\t" << dye::purple("Year: ") << dye::light_yellow(sortedList1[i].returnYear()) << endl;
+                            cout << "\t" << dye::purple("Publisher: ") << dye::light_yellow(sortedList1[i].returnPublisher()) << endl;
+                            cout << "\t" << dye::purple("Release Console: ") << dye::light_yellow(sortedList1[i].returnConsole()) << endl;
+                            cout << "\t" << dye::purple("Sales: ") << dye::light_yellow(sortedList1[i].returnSales()) << endl;
+                            cout << "\t" << dye::purple("Metric Score: ") << dye::light_yellow(sortedList1[i].returnRatings()) << endl << endl;
+                        }
+
+
+                        // Display the times for each sorting algorithm
+                        cout << dye::blue("GameGenie: Time taken by sorting:") << endl;
+                        cout << dye::purple("Radix Sort: ") << dye::light_yellow(duration1.count() / 1000.0) << dye::light_yellow(" ms") << endl;
+                        cout << dye::purple("Quick Sort: ") << dye::light_yellow(duration2.count() / 1000.0) << dye::light_yellow(" ms") << endl;
+                        cout << dye::purple("Bucket Sort: ") << dye::light_yellow(duration3.count() / 1000.0) << dye::light_yellow(" ms") << endl << endl;
+                    }
+                }
+            }
+        }
+        else if (option == 3) // Exit
+        {
+            cout << dye::blue("GameGenie: Thank you for using GameGenie! :)") << endl;
+            programRun = false;
+        }
+        else
+        {
+            cout << dye::blue("GameGenie: Sorry, invalid option! Try again?") << endl << endl;
+        }
     }
-    */
-
 
     return 0;
-
 }

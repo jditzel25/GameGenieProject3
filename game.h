@@ -57,8 +57,9 @@ struct Game{
         return title;
     }
 
-    float returnSales(){
-        return sales;
+    int returnSales(){
+        int rounded = sales * 1000;
+        return rounded * (1000000 / 1000);
     }
 
     int returnRatings(){
